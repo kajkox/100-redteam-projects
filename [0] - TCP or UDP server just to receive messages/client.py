@@ -1,21 +1,23 @@
 from socket import *
 from socketserver import *
 
-def createSocket():
+def createClientSocket() -> socket:
     print("[CLIENT] Creating socket object...")
     addres_fam = AF_INET
-    transport_prot = SOCK_STREAM    
+    transport_prot = SOCK_STREAM    # can implement UDP in the future
     newSocketObject = socket(family=addres_fam, type=transport_prot)
     print("[CLIENT] Socket object created successfully!")
     return newSocketObject
 
-def bindToLocalSocket(local_ipv4_add: str, local_port: int, socketObject: socket = createSocket()) -> socket:
+def bindToLocalClientSocket(local_ipv4_add: str, local_port: int, socketObject: socket = createClientSocket()) -> socket:
     print("[CLINET] Binding to local socket...")
-    socketAdress = (local_ipv4_add, local_port)
-    socketObject.bind(socketAdress)
+    socket_add = (local_ipv4_add, local_port)
+    socketObject.bind(socket_add)
     print(f"[CLIENT] Socket bound succesfully to {local_ipv4_add}:{local_port}")
     return socketObject
 
-def requestConnection(remote_ipv4_add: str, remote_port: int, local_socket_object : socket):
+def requestConnectionToServerSocket(remote_ipv4_add: str, remote_port: int, local_socket_object : socket):
+    print("[CLIENT] Attempting connection...")
     local_socket_object.connect((remote_ipv4_add, remote_port))
+    print("[CLIENT] Connected!")
     
