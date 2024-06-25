@@ -16,8 +16,9 @@ def bindToLocalClientSocket(local_ipv4_add: str, local_port: int, socketObject: 
     print(f"[CLIENT] Socket bound succesfully to {local_ipv4_add}:{local_port}")
     return socketObject
 
-def requestConnectionToServerSocket(remote_ipv4_add: str, remote_port: int, local_socket_object : socket):
+def requestConnectionToServerSocket(remote_ipv4_add: str, remote_port: int, boundSocketObject : socket):
     print("[CLIENT] Attempting connection...")
-    local_socket_object.connect((remote_ipv4_add, remote_port))
+    server_socket_add = (remote_ipv4_add, remote_port)
+    boundSocketObject.connect(server_socket_add)
     print("[CLIENT] Connected!")
     

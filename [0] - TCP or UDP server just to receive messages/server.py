@@ -13,8 +13,12 @@ def bindToLocalServerSocket(local_ipv4_add: str, local_port: int, socketObject: 
     print("[SERVER] Binding to local socket")
     socket_add = (local_ipv4_add, local_port)
     socketObject.bind(socket_add)
+    print(f"[SERVER] Socket bound succesfully to {local_ipv4_add}:{local_port}")
     return socketObject
     
 
 def startListening(remote_ipv4_add: str, remote_port: int, boundSocketObject: socket):
-    boundSocketObject.
+    print("[SERVER] Listening...")
+    client_socket_add = (remote_ipv4_add, remote_port)
+    boundSocketObject.accept(client_socket_add)
+    print("[SERVER] Connection accepted!")
