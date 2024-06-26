@@ -1,5 +1,14 @@
 import socket
 
-def connect(ipv4_add: str = "", port: int = 42069):
-    add = (ipv4_add, port)
-    return socket.create_connection(add)
+def connectToServer():
+    HOST_ADD = "127.0.0.1"
+    HOST_PORT = 65432
+
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((HOST_ADD, HOST_PORT))
+        s.sendall("Hello, world")
+        data = s.recv(1024)
+
+    print(f"Received {data}!")
+
+connectToServer()

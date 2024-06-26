@@ -1,12 +1,21 @@
 import socket
 
-def createServerSocket() -> socket.socket:
-    socketObject = socket.socket(family=socket.AF_INET, proto=socket.SOCK_STREAM)
-    return socketObject
+def setupServer():
+    try:
+        HOST_ADD = "127.0.0.1"
+        HOST_PORT = 65432
 
-def initializeServerSocket(ipv4_add: str, port: int):
-    add = (ipv4_add, port)
-    serverSocket = createServerSocket()
-    serverSocket.bind(add)
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.bind((HOST_ADD, HOST_PORT))
+            s.listen()
+            connection, address = s.accept()
+            with connection:
+                while True:
+                    data = connection.recv(1024)
+                    if not data:
+                        break
+                    connection.sendall(data)
+    except KeyboardInterrupt:
+        return 0
     
-    
+setupServer()
