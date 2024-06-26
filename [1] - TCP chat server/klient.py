@@ -8,15 +8,14 @@ socketObject = socket.socket(family=ADDRESS_FAM, type=TRANSPORT_PROT)
 
 socketObject.connect((IP_ADD, PORT))
 print(f"Connection with {IP_ADD}:{PORT} successful!\n")
-print("Type 'close' to end connection")
+print("Type 'close' to close connection")
 while True:
-    print(f"Received: {socketObject.recv(1024).decode()}")
-    data = input("> ")
+    data = input(">")
     if data == "close":
         socketObject.close()
-        print("Connection closed!")
+        print(f"Connetion with {(IP_ADD, PORT)} closed!")
         break
     else:
-
         data = data.encode()
-        socketObject.sendall(data)
+        socketObject.send(data)
+        print(f"Received: {socketObject.recv(1024).decode()}")

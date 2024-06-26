@@ -10,13 +10,14 @@ socketObject.bind((IP_ADD, PORT))
 socketObject.listen()
 connection, address = socketObject.accept()
 print(f"Connection accepted from {address}")
+print("Input 'close' to close connection.")
 while True:
-    data = input("> ")
+    print(f"Received: {connection.recv(1024).decode()}")
+    data = input(">")
     if data == "close":
+        print(f"Connection with {address} closed!")
         connection.close()
-        print("Connection closed!")
         break
     else:
-    print(f"Received: {connection.recv(1024).decode()}")
         data = data.encode()
-        connection.sendall(data)
+        connection.send(data)
