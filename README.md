@@ -1,5 +1,5 @@
-My personal attempt at completing "100-redteam-projects", while learning something along the way:)
-Also here will be my personal thoughts and what i have learned throughout the way.
+# My personal attempt at completing "100-redteam-projects", while learning something along the way:)
+Also here will be my personal thoughts and what i have learned throughout the way. Kind of like my personal notes.
 Future me, keep it up
 
 a socket is an ip address + port, usually. socket objects on the server side should be bound -> start listening -> accept connection 
