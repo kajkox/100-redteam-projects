@@ -13,6 +13,14 @@ from config import FR_ADD_IP, FR_ADD_NM
 # error messages
 from config import ERR_FR_ADD_IP, ERR_FR_ADD_NM, OK
 
+## GLOBAL VARIABLES
+
+# this will be filled when a user 'registers', but for now i will just insert the data manually
+contact_book = {
+    "client1" : ("127.0.0.1", 34568),
+    "client2" : ("127.0.0.1", 34569)
+}
+
 # creating a socket object and binding
 s_obj = socket.socket(ADD_FAM, S_TYPE)
 s_obj.bind((SERVER_IP, SERVER_PORT))
@@ -28,4 +36,18 @@ while True:
     parsed_message = message.split("[TYPE]:")
     request = parsed_message[-1]
     data = parsed_message[0]
-    print(f"{client_add}\n{data}\n{request}")
+
+    # checking the request type
+    if request == FR_ADD_IP:
+        # create a new thread and run the proper function
+        # -----
+        pass
+
+    elif request == FR_ADD_NM:
+        # same as above
+        # -----
+        pass
+
+    else:
+
+        # unexpected request, sending error message
