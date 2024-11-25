@@ -129,7 +129,7 @@ def ip_add(friend_ip: str, friend_port: int) -> None | SyntaxError | NameError |
 
     # crafting the message
     message: str = ""
-    message += friend_ip + ',' + friend_port
+    message += friend_ip + ',' + str(friend_port)
     message += FR_ADD_IP
 
     # encoding to bytes
@@ -164,7 +164,6 @@ def ip_add(friend_ip: str, friend_port: int) -> None | SyntaxError | NameError |
     else:
         raise ValueError
 
-    # print(f"IP works: {friend_ip}, {friend_port}")
 
 # main menu loop
 def main() -> int:
@@ -217,7 +216,7 @@ def main() -> int:
 
                 # catching wrong input
                 try:
-                    port = int(input)
+                    port = int(input())
                 except ValueError:
                     print("[ERROR] Please input the port as a number.")
 
