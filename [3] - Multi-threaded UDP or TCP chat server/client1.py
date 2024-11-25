@@ -1,3 +1,5 @@
+### client file, if new clients need to be implemented just increment the port number
+
 import socket
 
 ## CONSTANTS
@@ -13,13 +15,15 @@ from config import SERVER_PORT, SERVER_IP, ADD_FAM, S_TYPE
 from config import FR_ADD_IP, FR_ADD_NM
 
 # error messages
-from config import ERR_FR_ADD_IP, ERR_FR_ADD_NM
+from config import ERR_FR_ADD_IP, ERR_FR_ADD_NM, OK
 
 # TODO 
 # add friend by ip - DONE
 # add friend by name - DONE
-# displaying contact book
+# displaying contact book - DONE
 # actually sending messages
+# server responses !
+# implementing threading
 
 # main menu prompt
 MAIN_MENU: str = """
@@ -28,6 +32,7 @@ Please select an option from the menu below:
     [0] - exit
     [1] - add a friend by name
     [2] - add a friend by ip:port 
+    [3] - display contact book
 Your choice: """
 
 
@@ -37,6 +42,24 @@ Your choice: """
 contact_book = {
 
 }
+
+# function that displays the contact book
+def show_contact() -> None | IndexError:
+    
+    # checking if contact_book is empty
+    if len(contact_book) == 0:
+        raise IndexError
+
+    # index for displaying contact info
+    index: int = 0
+    for friend in contact_book.keys():
+
+        # incrementing
+        index += 1
+        print(f"({index}) {friend} : {contact_book[friend]}")
+
+    return None
+
 
 # function that adds friend by name to the contact book
 # the function sends data to the server with some metadata to interpret what type of request it is
@@ -69,25 +92,27 @@ def name_add(friend_name: str) -> None | SyntaxError | NameError | ValueError:
 
     # parsing data, comparing response
     parsed_response: list[str] = response.split("[TYPE]:")
-    match parsed_response[1]:
 
-        # the server responded with an error
-        case "EFNM":
-            raise SyntaxError
+    # couldn't implement match case because of "Irrefutable pattern is allowed only for the last case statement", see: https://stackoverflow.com/questions/69854421/python-match-case-using-global-variables-in-the-cases-solvable-by-use-of-classe
+    # will just do a classic if else comparison
+
+    # the server responded with an error
+    if parsed_response[-1] == ERR_FR_ADD_NM:
+        raise SyntaxError
         
-        # the server responded properly with a (ip, port) response tuple
-        case "OK":
-            # extracting the ip and port from message
-            friend_ip = parsed_response[0].split(',')[0]
-            friend_port = int(parsed_response[0].split(',')[1])
+    # the server responded properly with a (ip, port) response tuple
+    elif parsed_response[-1] == OK:
+        # extracting the ip and port from message
+        friend_ip = parsed_response[0].split(',')[0]
+        friend_port = int(parsed_response[0].split(',')[1])
 
-            # adding to contact book
-            contact_book[friend_name] = (friend_ip, friend_port)
-            return None
+        # adding to contact book
+        contact_book[friend_name] = (friend_ip, friend_port)
+        return None
         
         # unexpected or no response
-        case _:
-            raise ValueError
+    else:
+        raise ValueError
 
 
 
@@ -119,23 +144,25 @@ def ip_add(friend_ip: str, friend_port: int) -> None | SyntaxError | NameError |
 
     # parsing data, comparing response
     parsed_response: list[str] = response.splt("[TYPE]:")
-    match parsed_response[1]:
 
-        # the server responded with an error
-        case "EFIP":
-            raise SyntaxError
-        
-        # the server responded properly with a name of the friend
-        case "OK":
-            friend_name = parsed_response[0]
+    # couldn't implement match case because of "Irrefutable pattern is allowed only for the last case statement", see: https://stackoverflow.com/questions/69854421/python-match-case-using-global-variables-in-the-cases-solvable-by-use-of-classe
+    # will just do a classic if else comparison
 
-            # adding to contanct book
-            contact_book[friend_name] = (friend_ip, friend_port)
-            return None
+    # the server responded with an error
+    if parsed_response[-1] == ERR_FR_ADD_IP:
+        raise SyntaxError
         
-        # unexpected or no response
-        case _:
-            raise ValueError
+    # the server responded properly with a name of the friend
+    elif parsed_response[-1] == OK:
+        friend_name = parsed_response[0]
+
+        # adding to contanct book
+        contact_book[friend_name] = (friend_ip, friend_port)
+        return None
+        
+    # unexpected or no response
+    else:
+        raise ValueError
 
     # print(f"IP works: {friend_ip}, {friend_port}")
 
@@ -154,9 +181,11 @@ def main() -> int:
         # menu selection
         match choice:
 
+            # exiting
             case 0:
                 return 0
 
+            # adding friend by name
             case 1:
                 print(f"Please input the name of the friend you want to add: ")
                 name = input()
@@ -180,6 +209,7 @@ def main() -> int:
                     print(f"[ERROR] The server didn't respond properly, make sure your connection is stable.")
 
 
+            # adding friend by ip
             case 2:
                 print(f"Please input your friend's ip: ")
                 ip = input()
@@ -208,6 +238,17 @@ def main() -> int:
                 # unexpected or no response from server
                 except ValueError:
                     print(f"[ERROR] The server didn't respond properly, make sure your connection is stable")
+
+            # displaying contact book
+            case 3:
+                
+                # catching error from function
+                try:
+                    show_contact()
+
+                # contact book is empty
+                except IndexError:
+                    print(f"You currently have no contacts!")
 
             case _:
                 print(f"Option not found, make sure you typed the option correctly")
