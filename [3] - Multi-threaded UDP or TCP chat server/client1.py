@@ -1,6 +1,6 @@
 ### client file, if new clients need to be implemented just increment the port number
 
-import socket
+import socket, logging
 
 ## CONSTANTS
 
@@ -22,8 +22,9 @@ from config import ERR_FR_ADD_IP, ERR_FR_ADD_NM, OK
 # add friend by name - DONE
 # displaying contact book - DONE
 # actually sending messages
-# server responses !
-# implementing threading
+# server responses - DONE (debugging)
+# implementing threading - DONE (debugging)
+# finish writing debug info !!!!!
 
 # main menu prompt
 MAIN_MENU: str = """
@@ -38,15 +39,64 @@ Your choice: """
 
 ## GLOBAL VARIABLES
 
+# changing this to false will display less info
+is_debug = True
+
+# logger function, default level is just info
+def configure_logger(verbose = False):
+
+    # setting the logging level
+    if verbose:
+        level = logging.DEBUG
+    else:
+        logging.INFO
+    
+    # configurating the display message
+    logging.basicConfig(
+        level=level,
+        format="%(asctime)s - %(levelname)s - %(message)s"
+    )
+    return logging.getLogger(__name__)
+
+# creating the logger
+logger = configure_logger(is_debug)
+logger.debug("Logger configured properly!")
+
 # contant book (might implement it in a file)
 contact_book = {
 
 }
 
+logger.debug(f"Creating socket object with {(ADD_FAM, S_TYPE)}.")
+s_obj = socket.socket(family=ADD_FAM, type=S_TYPE)
+logger.debug(f"Binding to {(CLIENT_IP, CLIENT_PORT)}...")
+s_obj.bind((CLIENT_IP, CLIENT_PORT))
+logger.debug(f"Socket bound successfully")
+
+# multipurpose function that handles sending requests to the server
+def send_server_request(sending_request: str) -> str:
+
+    logger.info("Sending server request...")
+    # encoding
+    logger.debug(f"Encoding message: {sending_request}")
+    sending_request = sending_request.encode()
+    logger.debug("Message succesfully encoded!")
+
+    # sending message
+    logger.debug(f"Sending the message to the server address: {(SERVER_IP, SERVER_PORT)}...")
+    s_obj.sendto(sending_request, (SERVER_IP, SERVER_PORT))
+    logger.debug("Message sent.")
+    logger.debug("Waiting for response...")
+    response = s_obj.recv(1024).decode()
+    logger.info("Server responded")
+    return response
+
 # function that displays the contact book
 def show_contact() -> None | IndexError:
     
+    logger.info("Displaying contact book")
     # checking if contact_book is empty
+    logger.debug("Checking if contact book is empty...")
     if len(contact_book) == 0:
         raise IndexError
 
@@ -57,7 +107,8 @@ def show_contact() -> None | IndexError:
         # incrementing
         index += 1
         print(f"({index}) {friend} : {contact_book[friend]}")
-
+    logger.debug("Iterated over every object in contact book, returning...")
+    
     return None
 
 
@@ -66,29 +117,19 @@ def show_contact() -> None | IndexError:
 # the same method is used in ip_add()
 def name_add(friend_name: str) -> None | SyntaxError | NameError | ValueError:
 
+
     # checking if name is already in contact book
     if friend_name in contact_book.keys():
         raise NameError
 
-
-    # creating a socket object and binding
-    s_obj = socket.socket(family=ADD_FAM, type=S_TYPE)
-    s_obj.bind((CLIENT_IP, CLIENT_PORT))
-    
     # crafting the message
     message = ""
     message += friend_name
     message += FR_ADD_NM
 
-    # encoding to bytes
-    message = message.encode()
-
 
     # sending the message and waiting for response
-    s_obj.sendto(message, (SERVER_IP, SERVER_PORT))
-    response = s_obj.recv(1024)
-    response = response.decode()
-
+    response = send_server_request(sending_request=message)
 
     # parsing data, comparing response
     parsed_response: list[str] = response.split("[TYPE]:")
@@ -122,28 +163,18 @@ def ip_add(friend_ip: str, friend_port: int) -> None | SyntaxError | NameError |
     # checking if name is already in contact book
     if (friend_ip, friend_port) in contact_book.values():
         raise NameError
-    
-    # creating a socket object and binding
-    s_obj = socket.socket(family=ADD_FAM, type=S_TYPE)
-    s_obj.bind((CLIENT_IP, CLIENT_PORT))
 
     # crafting the message
     message: str = ""
     message += friend_ip + ',' + str(friend_port)
-    message += FR_ADD_IP
-
-    # encoding to bytes
-    message = message.encode()
-
+    message += "[TYPE]:" + FR_ADD_IP
 
     # sending the message and waiting for response
-    s_obj.sendto(message, (SERVER_IP, SERVER_PORT))
-    response = s_obj.recv(1024)
-    response = response.decode()
-
+    # client will continuesly send until all data is sent
+    response = send_server_request(sending_request=message)
 
     # parsing data, comparing response
-    parsed_response: list[str] = response.splt("[TYPE]:")
+    parsed_response: list[str] = response.split("[TYPE]:")
 
     # couldn't implement match case because of "Irrefutable pattern is allowed only for the last case statement", see: https://stackoverflow.com/questions/69854421/python-match-case-using-global-variables-in-the-cases-solvable-by-use-of-classe
     # will just do a classic if else comparison
@@ -168,89 +199,94 @@ def ip_add(friend_ip: str, friend_port: int) -> None | SyntaxError | NameError |
 # main menu loop
 def main() -> int:
 
-    while True:
-        print(f"{MAIN_MENU}")
+    # can stop with ctrl_c
+    try:
 
-        # catching wrong input
-        try:
-            choice = int(input())
-        except ValueError:
-            print("Please input a number.")
+        while True:
+            print(f"{MAIN_MENU}")
 
-        # menu selection
-        match choice:
+            # catching wrong input
+            try:
+                choice = int(input())
+            except ValueError:
+                print("Please input a number.")
 
-            # exiting
-            case 0:
-                return 0
+            # menu selection
+            match choice:
 
-            # adding friend by name
-            case 1:
-                print(f"Please input the name of the friend you want to add: ")
-                name = input()
+                # exiting
+                case 0:
+                    return 0
 
-                # catching error from function
-                try:
+                # adding friend by name
+                case 1:
+                    print(f"Please input the name of the friend you want to add: ")
+                    name = input()
 
-                    # adding friend
-                    name_add(name)
-                
-                # server couldn't add friend
-                except SyntaxError:
-                    print("[ERROR] Friend not found, make sure you typed the name correctly.")
+                    # catching error from function
+                    try:
 
-                # friend already in contact book
-                except NameError:
-                    print(f"[ERROR] Friend is already in your contact book.")
+                        # adding friend
+                        name_add(name)
+                    
+                    # server couldn't add friend
+                    except SyntaxError:
+                        print("[ERROR] Friend not found, make sure you typed the name correctly.")
 
-                # unexpected or no response from server
-                except ValueError:
-                    print(f"[ERROR] The server didn't respond properly, make sure your connection is stable.")
+                    # friend already in contact book
+                    except NameError:
+                        print(f"[ERROR] Friend is already in your contact book.")
+
+                    # unexpected or no response from server
+                    except ValueError:
+                        print(f"[ERROR] The server didn't respond properly, make sure your connection is stable.")
 
 
-            # adding friend by ip
-            case 2:
-                print(f"Please input your friend's ip: ")
-                ip = input()
-                print(f"Please input the port: ")
+                # adding friend by ip
+                case 2:
+                    print(f"Please input your friend's ip: ")
+                    ip = input()
+                    print(f"Please input the port: ")
 
-                # catching wrong input
-                try:
-                    port = int(input())
-                except ValueError:
-                    print("[ERROR] Please input the port as a number.")
+                    # catching wrong input
+                    try:
+                        port = int(input())
+                    except ValueError:
+                        print("[ERROR] Please input the port as a number.")
 
-                # catching error from function
-                try:
+                    # catching error from function
+                    try:
 
-                    # adding friend
-                    ip_add(ip, port)
+                        # adding friend
+                        ip_add(ip, port)
 
-                # server couldn't add friend
-                except SyntaxError:
-                    print(f"[ERROR] Friend not found, make sure you typed the ip and port correctly.")
+                    # server couldn't add friend
+                    except SyntaxError:
+                        print(f"[ERROR] Friend not found, make sure you typed the ip and port correctly.")
 
-                # friend already in contact book
-                except NameError:
-                    print(f"[ERROR]: Friend is already in your contact book.")
+                    # friend already in contact book
+                    except NameError:
+                        print(f"[ERROR]: Friend is already in your contact book.")
 
-                # unexpected or no response from server
-                except ValueError:
-                    print(f"[ERROR] The server didn't respond properly, make sure your connection is stable")
+                    # unexpected or no response from server
+                    except ValueError:
+                        print(f"[ERROR] The server didn't respond properly, make sure your connection is stable")
 
-            # displaying contact book
-            case 3:
-                
-                # catching error from function
-                try:
-                    show_contact()
+                # displaying contact book
+                case 3:
+                    
+                    # catching error from function
+                    try:
+                        show_contact()
 
-                # contact book is empty
-                except IndexError:
-                    print(f"You currently have no contacts!")
+                    # contact book is empty
+                    except IndexError:
+                        print(f"You currently have no contacts!")
 
-            case _:
-                print(f"Option not found, make sure you typed the option correctly")
+                case _:
+                    print(f"Option not found, make sure you typed the option correctly")
+    except KeyboardInterrupt:
+        exit(0)
 
 if __name__ == "__main__":
     main()

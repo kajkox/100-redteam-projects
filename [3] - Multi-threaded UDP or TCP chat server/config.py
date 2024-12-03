@@ -8,12 +8,12 @@ ADD_FAM = socket.AF_INET
 S_TYPE = socket.SOCK_DGRAM
 
 # message constants
-FR_ADD_IP = "[TYPE]:FIP"
-FR_ADD_NM = "[TYPE]:FNM"
-OK = "[TYPE]:OK"
+FR_ADD_IP = "FIP"
+FR_ADD_NM = "FNM"
+OK = "OK"
 # error constants
-ERR_FR_ADD_IP = "[TYPE]:EFIP"
-ERR_FR_ADD_NM = "[TYPE]:EFNM"
+ERR_FR_ADD_IP = "EFIP"
+ERR_FR_ADD_NM = "EFNM"
 
 ## the format below specifies the type and message that is being sent by the client/user
 # the request type is specified in the end, and is seperated by a special character combination to ensure that the user doesn't accidentally mess up

@@ -43,6 +43,27 @@ contact_book = {
 
 }
 
+# multipurpose function that handles sending requests to the server
+def send_server_request(sending_request: str) -> str:
+
+    # encoding
+    sending_request = sending_request.encode()
+    # the client will continuesly send data to the server untill all data is sent
+
+    # creating a socket object and binding
+    s_obj = socket.socket(family=ADD_FAM, type=S_TYPE)
+    s_obj.bind((CLIENT_IP, CLIENT_PORT))
+
+    # sending data untill all is transmitted
+    while True:
+        b_sent = s_obj.send(data=sending_request)
+        
+        # all data is transmitted
+        if b_sent == sending_request:
+            # waiting for response and decoding
+            response = s_obj.recv(1024).decode()
+            
+
 # function that displays the contact book
 def show_contact() -> None | IndexError:
     
@@ -70,25 +91,14 @@ def name_add(friend_name: str) -> None | SyntaxError | NameError | ValueError:
     if friend_name in contact_book.keys():
         raise NameError
 
-
-    # creating a socket object and binding
-    s_obj = socket.socket(family=ADD_FAM, type=S_TYPE)
-    s_obj.bind((CLIENT_IP, CLIENT_PORT))
-    
     # crafting the message
     message = ""
     message += friend_name
     message += FR_ADD_NM
 
-    # encoding to bytes
-    message = message.encode()
-
 
     # sending the message and waiting for response
-    s_obj.sendto(message, (SERVER_IP, SERVER_PORT))
-    response = s_obj.recv(1024)
-    response = response.decode()
-
+    response = send_server_request(sending_request=message)
 
     # parsing data, comparing response
     parsed_response: list[str] = response.split("[TYPE]:")
@@ -122,25 +132,15 @@ def ip_add(friend_ip: str, friend_port: int) -> None | SyntaxError | NameError |
     # checking if name is already in contact book
     if (friend_ip, friend_port) in contact_book.values():
         raise NameError
-    
-    # creating a socket object and binding
-    s_obj = socket.socket(family=ADD_FAM, type=S_TYPE)
-    s_obj.bind((CLIENT_IP, CLIENT_PORT))
 
     # crafting the message
     message: str = ""
     message += friend_ip + ',' + str(friend_port)
     message += FR_ADD_IP
 
-    # encoding to bytes
-    message = message.encode()
-
-
     # sending the message and waiting for response
-    s_obj.sendto(message, (SERVER_IP, SERVER_PORT))
-    response = s_obj.recv(1024)
-    response = response.decode()
-
+    # client will continuesly send until all data is sent
+    response = send_server_request(sending_request=message)
 
     # parsing data, comparing response
     parsed_response: list[str] = response.splt("[TYPE]:")
