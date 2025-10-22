@@ -11,3 +11,4 @@ client side socket objects just have to be created and connect to the server acc
 the earlier comment is almost correct, but it only contains information about the TCP connection (socket.SOCK_STREAM), in UPD (socket.SOCK_DGRAM) both the client/s need to be bound to sockets (each one to a different obv.) after binding the socketObject.recvfrom(1024) method also returns two objects, one for the received data, the second for the address of the client. because no 3WHS is established there is no object for the connection like in TCP, instead the program i have written just stops the while loop, with it the recv_from method. sending data is also pretty easy, after encoding we use the socketObject.sendto(data, (socket_tuple)) method, which is pretty clear in itself.
 # 02.10.2024
 After a *short* break i decided to return to this project of mine, partly because my spring break is over and im back at uni so im more tuned into programming. We will see what i can do.
+
